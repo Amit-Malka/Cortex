@@ -5,6 +5,8 @@ import AppError from './utils/AppError';
 import errorHandler from './middleware/errorHandler';
 import { initBigIntSerializer } from './utils/bigintSerializer';
 import prisma from './lib/prisma';
+import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
 
 // Initialize BigInt serialization for JSON
 initBigIntSerializer();
@@ -39,6 +41,12 @@ app.get('/health', async (_req: Request, res: Response) => {
     database: dbStatus
   });
 });
+
+// Auth routes
+app.use('/auth', authRoutes);
+
+// User routes (protected)
+app.use('/api/users', userRoutes);
 
 // API routes placeholder
 app.use('/api', (_req: Request, res: Response) => {

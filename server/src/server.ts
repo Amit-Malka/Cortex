@@ -1,7 +1,29 @@
+import path from 'path';
 import dotenv from 'dotenv';
-import app from './app';
 
-dotenv.config();
+// Load environment variables FIRST before any other imports
+// __dirname in ts-node points to the src directory
+const envPath = path.resolve(__dirname, '../.env');
+const result = dotenv.config({ path: envPath });
+
+if (result.error) {
+  console.warn(`⚠️  Warning: Could not load .env file from ${envPath}`);
+  console.warn('Attempting to load from current directory...');
+  dotenv.config();
+}
+
+// Verify critical environment variables
+const requiredEnvVars = ['JWT_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'];
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:');
+  missingEnvVars.forEach(varName => console.error(`   - ${varName}`));
+  console.error('\nPlease create a .env file in the server directory with the required variables.');
+  console.error('See server/.env.example for reference.\n');
+}
+
+import app from './app';
 
 const PORT = process.env.PORT || 3000;
 
