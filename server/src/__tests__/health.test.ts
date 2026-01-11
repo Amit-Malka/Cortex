@@ -3,12 +3,14 @@ import app from '../app';
 
 describe('Health Check & Error Handling', () => {
   describe('GET /health', () => {
-    it('should return 200 and success message', async () => {
+    it('should return 200 and success message with database status', async () => {
       const response = await request(app).get('/health');
       
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('status', 'success');
       expect(response.body).toHaveProperty('message', 'Server is running');
+      expect(response.body).toHaveProperty('database');
+      expect(['connected', 'disconnected']).toContain(response.body.database);
     });
   });
 
