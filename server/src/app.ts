@@ -8,6 +8,7 @@ import prisma from './lib/prisma';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import driveRoutes from './routes/driveRoutes';
+import fileRoutes from './routes/fileRoutes';
 
 // Initialize BigInt serialization for JSON
 initBigIntSerializer();
@@ -51,6 +52,9 @@ app.use('/api/users', userRoutes);
 
 // Drive routes (protected)
 app.use('/api/drive', driveRoutes);
+
+// File routes (protected)
+app.use('/api/files', fileRoutes);
 
 // API routes placeholder
 app.use('/api', (_req: Request, res: Response) => {
