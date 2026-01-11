@@ -70,12 +70,23 @@ class GoogleClient {
     };
   }
 
-  async refreshAccessToken(refreshToken: string): Promise<string> {
+  setCredentials(tokens: { access_token?: string; refresh_token?: string }): void {
+    this.oauth2Client.setCredentials(tokens);
+  }
+
+  async refreshAccessToken(refreshToken: string): Promise<{ access_token: string; expiry_date: number }> {
     this.oauth2Client.setCredentials({ refresh_token: refreshToken });
     
     const { credentials } = await this.oauth2Client.refreshAccessToken();
     
-    return credentials.access_token!;
+    return {
+      access_token: credentials.access_token!,
+      expiry_date: credentials.expiry_date!,
+    };
+  }
+
+  getOAuth2Client(): OAuth2Client {
+    return this.oauth2Client;
   }
 }
 
