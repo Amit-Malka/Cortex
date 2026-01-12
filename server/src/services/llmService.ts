@@ -7,7 +7,7 @@ class LlmService {
   private systemPrompt: string;
 
   constructor() {
-    this.model = process.env.OPENAI_MODEL || 'gpt-4o';
+    this.model = process.env.OPENAI_MODEL || 'gpt-5-nano';
     this.systemPrompt = 
       "You are Cortex, an intelligent assistant. You have access to the user's file metadata. " +
       "Use the provided context to answer questions.";
@@ -56,10 +56,10 @@ class LlmService {
       });
 
       const response = await client.chat.completions.create({
-        model: this.model,
+        model: process.env.OPENAI_MODEL || this.model,
         messages,
-        temperature: 0.7,
-        max_tokens: 1000,
+        temperature: 1,
+        max_completion_tokens: 1000,
       });
 
       const reply = response.choices[0]?.message?.content;
