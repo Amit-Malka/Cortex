@@ -27,6 +27,16 @@ interface PaginatedFilesResponse {
   totalPages: number;
 }
 
+interface FileStatsResponse {
+  totalStorage: string;
+  fileCount: number;
+  typeDistribution: Array<{
+    mimeType: string;
+    count: number;
+    percentage: number;
+  }>;
+}
+
 class FileService {
   async getUserFiles(userId: string, query: FileQueryParams): Promise<PaginatedFilesResponse> {
     const page = Math.max(1, parseInt(String(query.page || 1)));
@@ -83,6 +93,65 @@ class FileService {
       total,
       page,
       totalPages,
+    };
+  }
+
+  async getUserStats(userId: string): Promise<FileStatsResponse> {
+    const where = { userId };
+
+    const [aggregateResult, fileCount, typeGroups] = await Promise.all([
+      prisma.file.aggregate({
+        where,
+        _sum: {
+          size: true,
+        },
+      }),
+      prisma.file.count({ where }),
+      prisma.file.groupBy({
+        by: ['mimeType'],
+        where,
+        _count: {
+          mimeType: true,
+        },
+        orderBy: {
+          _count: {
+            mimeType: 'desc',
+          },
+        },
+      }),
+    ]);
+
+    const totalStorage = aggregateResult._sum.size?.toString() || '0';
+
+    const sortedTypes = typeGroups
+      .map(group => ({
+        mimeType: group.mimeType,
+        count: group._count.mimeType,
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    const topTypes = sortedTypes.slice(0, 5);
+    const otherTypes = sortedTypes.slice(5);
+
+    const typeDistribution = topTypes.map(type => ({
+      mimeType: type.mimeType,
+      count: type.count,
+      percentage: fileCount > 0 ? Math.round((type.count / fileCount) * 100) : 0,
+    }));
+
+    if (otherTypes.length > 0) {
+      const otherCount = otherTypes.reduce((sum, type) => sum + type.count, 0);
+      typeDistribution.push({
+        mimeType: 'Other',
+        count: otherCount,
+        percentage: fileCount > 0 ? Math.round((otherCount / fileCount) * 100) : 0,
+      });
+    }
+
+    return {
+      totalStorage,
+      fileCount,
+      typeDistribution,
     };
   }
 }

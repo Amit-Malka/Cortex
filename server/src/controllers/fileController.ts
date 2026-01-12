@@ -23,3 +23,16 @@ export const getFiles = catchAsync(async (req: Request, res: Response) => {
     },
   });
 });
+
+export const getStats = catchAsync(async (req: Request, res: Response) => {
+  if (!req.user) {
+    throw new AppError('User not authenticated', 401);
+  }
+
+  const stats = await fileService.getUserStats(req.user.id);
+
+  res.status(200).json({
+    status: 'success',
+    data: stats,
+  });
+});
