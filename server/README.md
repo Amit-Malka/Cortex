@@ -157,9 +157,27 @@ server/
 
 ## Testing
 
+The project uses Jest with `ts-jest` for unit and integration testing.
+
+### Prerequisites
+- Ensure the database is running: `docker-compose up -d`
+- Ensure `.env` is configured with `DATABASE_URL`
+
+### Running Tests
+From the `server` directory:
+
 ```bash
+# Run all tests
 npm test
+
+# Run a specific test file
+npx jest src/__tests__/files.test.ts
+
+# Run tests with coverage
+npm run test
 ```
+
+Test files are located in `src/__tests__/`. Each major feature (Auth, Drive, Files) has its own dedicated test suite.
 
 ## Available Scripts
 

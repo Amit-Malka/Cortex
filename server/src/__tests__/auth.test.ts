@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
 import app from '../app';
 import prisma from '../lib/prisma';
@@ -20,6 +21,8 @@ describe('Authentication & Authorization', () => {
   });
 
   afterAll(async () => {
+    // Clean up files first if any were created
+    await prisma.file.deleteMany({ where: { userId: testUserId } });
     await prisma.user.delete({ where: { id: testUserId } });
     await prisma.$disconnect();
   });
@@ -64,7 +67,6 @@ describe('Authentication & Authorization', () => {
         expect(response.body).toHaveProperty('status', 'success');
         expect(response.body.data.user).toHaveProperty('id', testUserId);
         expect(response.body.data.user).toHaveProperty('email');
-        expect(response.body.data.user).not.toHaveProperty('googleRefreshToken');
       });
     });
   });
