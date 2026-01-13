@@ -108,6 +108,38 @@ export const useFileStore = defineStore('files', () => {
     }
   }
 
+  async function deleteFile(id: string) {
+    try {
+      await api.delete(`/files/${id}`);
+      // Optimistic update
+      files.value = files.value.filter(f => f.id !== id);
+      // Update count in stats if available
+      if (stats.value) {
+        stats.value.fileCount--;
+      }
+    } catch (error) {
+      console.error('Failed to delete file:', error);
+      throw error;
+    }
+  }
+
+  async function renameFile(id: string, newName: string) {
+    try {
+      const response = await api.patch(`/files/${id}`, { name: newName });
+      const updatedFile = response.data.data.file;
+      
+      // Update local state
+      const index = files.value.findIndex(f => f.id === id);
+      if (index !== -1) {
+        // Preserve other properties while updating from response
+        files.value[index] = { ...files.value[index], ...updatedFile };
+      }
+    } catch (error) {
+      console.error('Failed to rename file:', error);
+      throw error;
+    }
+  }
+
   return {
     stats,
     files,
@@ -119,6 +151,8 @@ export const useFileStore = defineStore('files', () => {
     fetchStats,
     fetchFiles,
     syncDrive,
-    queryAI
+    queryAI,
+    deleteFile,
+    renameFile
   };
 });
