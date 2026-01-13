@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import { OAuth2Client } from 'google-auth-library';
 import prisma from '../lib/prisma';
 import GoogleClient from '../utils/googleClient';
 import AppError from '../utils/AppError';
@@ -22,6 +23,41 @@ class DriveService {
 
   constructor() {
     this.googleClient = new GoogleClient();
+  }
+
+  async deleteFile(oauth2Client: OAuth2Client, fileId: string): Promise<void> {
+    const drive = google.drive({
+      version: 'v3',
+      auth: oauth2Client,
+    });
+
+    try {
+      await drive.files.delete({
+        fileId,
+      });
+    } catch (error) {
+      console.error('Error deleting file from Google Drive:', error);
+      throw new AppError('Failed to delete file from Google Drive', 500);
+    }
+  }
+
+  async renameFile(oauth2Client: OAuth2Client, fileId: string, newName: string): Promise<void> {
+    const drive = google.drive({
+      version: 'v3',
+      auth: oauth2Client,
+    });
+
+    try {
+      await drive.files.update({
+        fileId,
+        requestBody: {
+          name: newName,
+        },
+      });
+    } catch (error) {
+      console.error('Error renaming file in Google Drive:', error);
+      throw new AppError('Failed to rename file in Google Drive', 500);
+    }
   }
 
   async syncUserFiles(userId: string): Promise<number> {

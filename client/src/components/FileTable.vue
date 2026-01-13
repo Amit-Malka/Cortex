@@ -1,12 +1,41 @@
 <script setup lang="ts">
-import { type File } from '../stores/files';
+import { ref } from 'vue';
+import { useFileStore, type File } from '../stores/files';
 import { formatBytes, formatDate } from '../utils/format';
-import { ExternalLink, File as FileIcon } from 'lucide-vue-next';
+import { ExternalLink, File as FileIcon, Pencil, Trash2 } from 'lucide-vue-next';
+import RenameModal from './RenameModal.vue';
 
 defineProps<{
   files: File[];
   loading: boolean;
 }>();
+
+const store = useFileStore();
+const isRenameModalOpen = ref(false);
+const fileToRename = ref<File | null>(null);
+
+const openRenameModal = (file: File) => {
+  fileToRename.value = file;
+  isRenameModalOpen.value = true;
+};
+
+const closeRenameModal = () => {
+  isRenameModalOpen.value = false;
+  fileToRename.value = null;
+};
+
+const handleRename = async (newName: string) => {
+  if (fileToRename.value) {
+    await store.renameFile(fileToRename.value.id, newName);
+    closeRenameModal();
+  }
+};
+
+const handleDelete = async (file: File) => {
+  if (confirm(`Are you sure you want to delete "${file.name}"?`)) {
+    await store.deleteFile(file.id);
+  }
+};
 </script>
 
 <template>
@@ -28,7 +57,7 @@ defineProps<{
               Modified
             </th>
             <th scope="col" class="px-8 py-5 text-right text-xs font-serif font-bold text-foreground/60 uppercase tracking-widest">
-              Action
+              Actions
             </th>
           </tr>
         </thead>
@@ -64,13 +93,28 @@ defineProps<{
               {{ formatDate(file.modifiedTime) }}
             </td>
             <td class="px-8 py-5 whitespace-nowrap text-right text-sm font-medium">
-              <a :href="file.webViewLink" target="_blank" class="text-primary hover:text-primary/80 inline-flex items-center transition-colors">
-                Open <ExternalLink class="ml-1 h-3 w-3" />
-              </a>
+              <div class="flex justify-end items-center gap-2">
+                <a :href="file.webViewLink" target="_blank" class="p-2 rounded-full text-foreground/40 hover:text-primary hover:bg-primary/10 transition-colors" title="Open in Drive">
+                  <ExternalLink class="h-4 w-4" />
+                </a>
+                <button @click="openRenameModal(file)" class="p-2 rounded-full text-foreground/40 hover:text-secondary hover:bg-secondary/10 transition-colors" title="Rename">
+                  <Pencil class="h-4 w-4" />
+                </button>
+                <button @click="handleDelete(file)" class="p-2 rounded-full text-foreground/40 hover:text-red-500 hover:bg-red-50 transition-colors" title="Delete">
+                  <Trash2 class="h-4 w-4" />
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <RenameModal
+      :is-open="isRenameModalOpen"
+      :file-name="fileToRename?.name || ''"
+      @close="closeRenameModal"
+      @save="handleRename"
+    />
   </div>
 </template>
