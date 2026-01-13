@@ -3,5 +3,7 @@
 </script>
 
 <template>
-  <router-view />
+  <div class="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-primary/20">
+    <router-view />
+  </div>
 </template>
