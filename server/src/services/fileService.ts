@@ -40,7 +40,7 @@ interface FileStatsResponse {
 class FileService {
   async getUserFiles(userId: string, query: FileQueryParams): Promise<PaginatedFilesResponse> {
     const page = Math.max(1, parseInt(String(query.page || 1)));
-    const limit = Math.min(100, Math.max(1, parseInt(String(query.limit || 20))));
+    const limit = Math.min(2000, Math.max(1, parseInt(String(query.limit || 20))));
     const search = query.search?.trim();
     const sortBy = query.sortBy || 'modifiedTime';
     const order = query.order === 'asc' ? 'asc' : 'desc';

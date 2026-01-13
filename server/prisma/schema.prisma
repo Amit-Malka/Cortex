@@ -30,6 +30,9 @@ model File {
   webViewLink   String
   ownerEmail    String
   ownerName     String
+  lastModifierName String?
+  isStarred        Boolean  @default(false)
+  isShared         Boolean  @default(false)
   createdTime   DateTime
   modifiedTime  DateTime
   indexedAt     DateTime @default(now())
