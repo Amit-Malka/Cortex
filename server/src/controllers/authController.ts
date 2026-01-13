@@ -19,9 +19,7 @@ export const googleCallback = catchAsync(
 
     const result = await authService.handleLogin(code);
 
-    res.status(200).json({
-      status: 'success',
-      data: result,
-    });
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    res.redirect(`${clientUrl}?token=${result.token}`);
   }
 );
