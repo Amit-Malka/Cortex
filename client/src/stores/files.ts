@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import api from '../api/axios';
 
 export interface File {
@@ -46,6 +46,50 @@ export const useFileStore = defineStore('files', () => {
   const syncing = ref(false);
   const aiResponse = ref<string | null>(null);
   const aiLoading = ref(false);
+
+  const filesByType = computed(() => {
+    if (!stats.value?.typeDistribution) return {};
+    
+    // Simplify types
+    const distribution: Record<string, number> = {};
+    
+    stats.value.typeDistribution.forEach(item => {
+      let simpleType = 'Other';
+      const type = item.mimeType.toLowerCase();
+      
+      if (type.includes('image')) simpleType = 'Images';
+      else if (type.includes('pdf')) simpleType = 'PDF';
+      else if (type.includes('spreadsheet') || type.includes('excel') || type.includes('csv') || type.includes('sheet')) simpleType = 'Spreadsheets';
+      else if (type.includes('document') || type.includes('word') || type.includes('doc')) simpleType = 'Documents';
+      else if (type.includes('presentation') || type.includes('powerpoint') || type.includes('slide')) simpleType = 'Presentations';
+      else if (type.includes('video')) simpleType = 'Video';
+      else if (type.includes('audio')) simpleType = 'Audio';
+      else if (type === 'application/vnd.google-apps.folder') simpleType = 'Folders';
+      
+      distribution[simpleType] = (distribution[simpleType] || 0) + item.count;
+    });
+    
+    return distribution;
+  });
+
+  const storageBySize = computed(() => {
+    const categories = {
+      'Small (<1MB)': 0,
+      'Medium (1-10MB)': 0,
+      'Large (>10MB)': 0
+    };
+
+    files.value.forEach(file => {
+      const size = Number(file.size);
+      const mb = size / (1024 * 1024);
+      
+      if (mb < 1) categories['Small (<1MB)']++;
+      else if (mb < 10) categories['Medium (1-10MB)']++;
+      else categories['Large (>10MB)']++;
+    });
+
+    return categories;
+  });
 
   async function fetchStats() {
     try {
@@ -148,6 +192,8 @@ export const useFileStore = defineStore('files', () => {
     syncing,
     aiResponse,
     aiLoading,
+    filesByType,
+    storageBySize,
     fetchStats,
     fetchFiles,
     syncDrive,

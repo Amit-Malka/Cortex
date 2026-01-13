@@ -2,7 +2,7 @@
 import { onMounted } from 'vue';
 import { useFileStore } from '../stores/files';
 import { useAuthStore } from '../stores/auth';
-import { RefreshCw, LogOut, LayoutDashboard } from 'lucide-vue-next';
+import { RefreshCw, LogOut, LayoutDashboard, PieChart } from 'lucide-vue-next';
 import StatsGrid from '../components/StatsGrid.vue';
 import FileTable from '../components/FileTable.vue';
 import AiSearchBar from '../components/AiSearchBar.vue';
@@ -46,6 +46,14 @@ const changePage = (newPage: number) => {
         </div>
         
         <div class="flex items-center space-x-6">
+          <router-link
+            to="/analytics"
+            class="inline-flex items-center px-4 py-2.5 text-sm font-bold rounded-full text-foreground hover:bg-secondary/10 hover:text-secondary transition-all duration-300"
+          >
+            <PieChart class="mr-2 h-4 w-4" stroke-width="2.5" />
+            Analytics
+          </router-link>
+
           <button
             @click="handleSync"
             :disabled="fileStore.syncing"
