@@ -47,6 +47,42 @@ export const useFileStore = defineStore('files', () => {
   const aiResponse = ref<string | null>(null);
   const aiLoading = ref(false);
 
+  // Sorting
+  const sortBy = ref<'name' | 'size' | 'mimeType' | 'modifiedTime'>('modifiedTime');
+  const sortOrder = ref<'asc' | 'desc'>('desc');
+
+  const sortedFiles = computed(() => {
+    return [...files.value].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy.value) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'size':
+          comparison = Number(BigInt(a.size) - BigInt(b.size));
+          break;
+        case 'mimeType':
+          comparison = a.mimeType.localeCompare(b.mimeType);
+          break;
+        case 'modifiedTime':
+          comparison = new Date(a.modifiedTime).getTime() - new Date(b.modifiedTime).getTime();
+          break;
+      }
+      
+      return sortOrder.value === 'asc' ? comparison : -comparison;
+    });
+  });
+
+  const toggleSort = (field: 'name' | 'size' | 'mimeType' | 'modifiedTime') => {
+    if (sortBy.value === field) {
+      sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortBy.value = field;
+      sortOrder.value = 'asc'; // Default to asc for new field, except maybe date? But let's keep simple.
+    }
+  };
+
   const filesByType = computed(() => {
     if (!stats.value?.typeDistribution) return {};
     
@@ -192,12 +228,16 @@ export const useFileStore = defineStore('files', () => {
     syncing,
     aiResponse,
     aiLoading,
+    sortBy,
+    sortOrder,
+    sortedFiles,
     filesByType,
     storageBySize,
     fetchStats,
     fetchFiles,
     syncDrive,
     queryAI,
+    toggleSort,
     deleteFile,
     renameFile
   };

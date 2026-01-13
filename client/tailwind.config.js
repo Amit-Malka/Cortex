@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -13,6 +14,12 @@ export default {
         secondary: '#C18C5D',  // Terracotta
         muted: '#F0EBE5',      // Stone
         'border-color': '#DED8CF', // Raw Timber
+        
+        // Dark Mode Colors
+        'dark-bg': '#1A1A18',      // Dark Earth/Charcoal
+        'dark-surface': '#242422', // Slightly lighter
+        'dark-text': '#E6DCCD',    // Sand/Beige
+        'primary-light': '#6E8560', // Lighter Moss for contrast
       },
       fontFamily: {
         sans: ['Nunito', 'sans-serif'],
