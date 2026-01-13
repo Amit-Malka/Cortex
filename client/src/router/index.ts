@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
 import LoginView from '../views/LoginView.vue';
 import DashboardView from '../views/DashboardView.vue';
 
@@ -20,16 +21,36 @@ const router = createRouter({
 });
 
 // Navigation Guard
-router.beforeEach((to, _from, next) => {
-  const token = localStorage.getItem('token');
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
   
-  if (to.meta.requiresAuth && !token) {
-    next({ name: 'login' });
-  } else if (to.name === 'login' && token) {
-    next({ name: 'dashboard' });
-  } else {
-    next();
+  // 1. Handle Token from URL (Google Callback)
+  if (to.query.token && typeof to.query.token === 'string') {
+    authStore.login(to.query.token);
+    
+    // Remove token from URL for cleaner history
+    // We redirect to the same path but without the query param
+    next({ path: to.path, query: {}, replace: true });
+    return;
   }
+
+  // 2. Check Auth for Protected Routes
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    // Attempt to restore from localStorage first
+    authStore.checkAuth();
+    if (!authStore.isAuthenticated) {
+      next({ name: 'login' });
+      return;
+    }
+  }
+
+  // 3. Prevent Logged-in Users from visiting Login
+  if (to.name === 'login' && authStore.isAuthenticated) {
+    next({ name: 'dashboard' });
+    return;
+  }
+
+  next();
 });
 
 export default router;
