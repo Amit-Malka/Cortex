@@ -16,6 +16,11 @@ interface DriveFile {
     displayName?: string;
     emailAddress?: string;
   }>;
+  lastModifyingUser?: {
+    displayName?: string;
+  };
+  starred?: boolean;
+  shared?: boolean;
 }
 
 class DriveService {
@@ -88,7 +93,7 @@ class DriveService {
       const response = await drive.files.list({
         pageSize: 100,
         pageToken,
-        fields: 'nextPageToken, files(id, name, mimeType, size, webViewLink, createdTime, modifiedTime, owners)',
+        fields: 'nextPageToken, files(id, name, mimeType, size, webViewLink, createdTime, modifiedTime, owners, lastModifyingUser(displayName), starred, shared)',
       });
 
       const files = response.data.files as DriveFile[];
@@ -106,6 +111,19 @@ class DriveService {
     const upsertOperations = allFiles.map(file => {
       const owner = file.owners?.[0];
       
+      const fileData = {
+        name: file.name,
+        mimeType: file.mimeType,
+        size: file.size ? BigInt(file.size) : BigInt(0),
+        webViewLink: file.webViewLink || '',
+        ownerEmail: owner?.emailAddress || '',
+        ownerName: owner?.displayName || 'Me',
+        lastModifierName: file.lastModifyingUser?.displayName || 'Unknown',
+        isStarred: file.starred || false,
+        isShared: file.shared || false,
+        modifiedTime: file.modifiedTime ? new Date(file.modifiedTime) : new Date(),
+      };
+
       return prisma.file.upsert({
         where: {
           id_userId: {
@@ -116,24 +134,10 @@ class DriveService {
         create: {
           id: file.id,
           userId,
-          name: file.name,
-          mimeType: file.mimeType,
-          size: file.size ? BigInt(file.size) : BigInt(0),
-          webViewLink: file.webViewLink || '',
-          ownerEmail: owner?.emailAddress || '',
-          ownerName: owner?.displayName || '',
+          ...fileData,
           createdTime: file.createdTime ? new Date(file.createdTime) : new Date(),
-          modifiedTime: file.modifiedTime ? new Date(file.modifiedTime) : new Date(),
         },
-        update: {
-          name: file.name,
-          mimeType: file.mimeType,
-          size: file.size ? BigInt(file.size) : BigInt(0),
-          webViewLink: file.webViewLink || '',
-          ownerEmail: owner?.emailAddress || '',
-          ownerName: owner?.displayName || '',
-          modifiedTime: file.modifiedTime ? new Date(file.modifiedTime) : new Date(),
-        },
+        update: fileData,
       });
     });
 

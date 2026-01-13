@@ -19,12 +19,14 @@ export const chat = catchAsync(async (req: Request, res: Response) => {
     throw new AppError('Message is required and must be a non-empty string', 400);
   }
 
-  const reply = await llmService.generateChatResponse(message.trim(), context);
+  const reply = await llmService.generateChatResponse(
+    req.user.id,
+    message.trim(),
+    context
+  );
 
   res.status(200).json({
     status: 'success',
-    data: {
-      reply,
-    },
+    data: { reply },
   });
 });

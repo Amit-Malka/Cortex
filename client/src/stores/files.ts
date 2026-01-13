@@ -127,6 +127,48 @@ export const useFileStore = defineStore('files', () => {
     return categories;
   });
 
+  const filesByDate = computed(() => {
+    const grouped: Record<string, number> = {};
+    
+    // Use files directly to compute stats
+    files.value.forEach(file => {
+      const date = new Date(file.modifiedTime);
+      const key = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+      grouped[key] = (grouped[key] || 0) + 1;
+    });
+
+    // Sort by date chronologically
+    const sortedKeys = Object.keys(grouped).sort((a, b) => {
+      return new Date(a).getTime() - new Date(b).getTime();
+    });
+
+    // Create sorted object
+    const sortedGrouped: Record<string, number> = {};
+    sortedKeys.forEach(key => {
+      sortedGrouped[key] = grouped[key];
+    });
+
+    return sortedGrouped;
+  });
+
+  const topOwners = computed(() => {
+    const counts: Record<string, number> = {};
+    
+    files.value.forEach(file => {
+      const owner = file.ownerName || 'Unknown';
+      counts[owner] = (counts[owner] || 0) + 1;
+    });
+
+    // Sort by count descending and take top 5
+    return Object.entries(counts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 5)
+      .reduce((obj, [key, val]) => {
+        obj[key] = val;
+        return obj;
+      }, {} as Record<string, number>);
+  });
+
   async function fetchStats() {
     try {
       const response = await api.get('/files/stats');
@@ -146,6 +188,25 @@ export const useFileStore = defineStore('files', () => {
       pagination.value = response.data.data.meta;
     } catch (error) {
       console.error('Failed to fetch files:', error);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function fetchAllFiles() {
+    loading.value = true;
+    try {
+      const response = await api.get('/files', {
+        params: { 
+          page: 1, 
+          limit: 2000 
+        }
+      });
+      files.value = response.data.data.files;
+      // We don't necessarily need to update pagination state here as this is for analytics
+      // but keeping it in sync might be good practice, or just ignored.
+    } catch (error) {
+      console.error('Failed to fetch all files:', error);
     } finally {
       loading.value = false;
     }
@@ -233,8 +294,11 @@ export const useFileStore = defineStore('files', () => {
     sortedFiles,
     filesByType,
     storageBySize,
+    filesByDate,
+    topOwners,
     fetchStats,
     fetchFiles,
+    fetchAllFiles,
     syncDrive,
     queryAI,
     toggleSort,
