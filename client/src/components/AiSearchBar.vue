@@ -26,9 +26,9 @@ const clearQuery = () => {
     <div class="relative group">
       <!-- Search Bar -->
       <div 
-        class="relative flex items-center bg-white/70 backdrop-blur-md border border-border-color/40 rounded-[2rem] shadow-soft transition-all duration-500 group-hover:shadow-float group-focus-within:shadow-float group-focus-within:border-primary/40 overflow-hidden"
+        class="relative flex items-center bg-white/70 dark:bg-dark-surface/70 backdrop-blur-md border border-border-color/40 dark:border-white/10 rounded-[2rem] shadow-soft transition-all duration-500 group-hover:shadow-float group-focus-within:shadow-float group-focus-within:border-primary/40 dark:group-focus-within:border-primary-light/40 overflow-hidden"
       >
-        <div class="pl-6 text-primary/60">
+        <div class="pl-6 text-primary/60 dark:text-primary-light/60">
           <Sparkles v-if="!fileStore.aiLoading" class="h-6 w-6" stroke-width="1.5" />
           <Loader2 v-else class="h-6 w-6 animate-spin" stroke-width="1.5" />
         </div>
@@ -37,7 +37,7 @@ const clearQuery = () => {
           v-model="query"
           type="text"
           placeholder="Ask anything about your files..."
-          class="w-full py-5 px-4 bg-transparent border-none focus:ring-0 text-foreground text-lg font-sans placeholder:text-foreground/30"
+          class="w-full py-5 px-4 bg-transparent border-none focus:ring-0 text-foreground dark:text-dark-text text-lg font-sans placeholder:text-foreground/30 dark:placeholder:text-dark-text/30"
           @keyup.enter="handleQuery"
         />
 
@@ -45,7 +45,7 @@ const clearQuery = () => {
           <button 
             v-if="query"
             @click="clearQuery"
-            class="p-2 text-foreground/30 hover:text-secondary transition-colors"
+            class="p-2 text-foreground/30 dark:text-dark-text/30 hover:text-secondary dark:hover:text-primary-light transition-colors"
           >
             <X class="h-5 w-5" />
           </button>
@@ -53,7 +53,7 @@ const clearQuery = () => {
           <button
             @click="handleQuery"
             :disabled="!query.trim() || fileStore.aiLoading"
-            class="bg-primary text-background px-6 py-2.5 rounded-full font-bold text-sm shadow-soft hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all duration-300"
+            class="bg-primary dark:bg-primary-light text-background dark:text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-soft hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 transition-all duration-300"
           >
             Ask AI
           </button>
@@ -71,31 +71,31 @@ const clearQuery = () => {
       >
         <div 
           v-if="showResponse && (fileStore.aiLoading || fileStore.aiResponse)"
-          class="mt-4 p-8 bg-primary/5 backdrop-blur-sm border border-primary/10 rounded-[2rem] rounded-tl-[0.5rem] shadow-inner-soft relative overflow-hidden"
+          class="mt-4 p-8 bg-primary/5 dark:bg-primary-light/10 backdrop-blur-sm border border-primary/10 dark:border-white/5 rounded-[2rem] rounded-tl-[0.5rem] shadow-inner-soft relative overflow-hidden"
         >
           <!-- Decorative leaf-like shape -->
-          <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
+          <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-primary/5 dark:bg-primary-light/5 rounded-full blur-2xl"></div>
           
           <div v-if="fileStore.aiLoading" class="flex flex-col items-center justify-center py-8 space-y-4">
             <div class="flex space-x-2">
-              <div class="h-2 w-2 bg-primary rounded-full animate-bounce"></div>
-              <div class="h-2 w-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-              <div class="h-2 w-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+              <div class="h-2 w-2 bg-primary dark:bg-primary-light rounded-full animate-bounce"></div>
+              <div class="h-2 w-2 bg-primary dark:bg-primary-light rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+              <div class="h-2 w-2 bg-primary dark:bg-primary-light rounded-full animate-bounce [animation-delay:-0.3s]"></div>
             </div>
-            <p class="text-primary/60 font-sans italic animate-pulse">Cortex is thinking...</p>
+            <p class="text-primary/60 dark:text-primary-light/60 font-sans italic animate-pulse">Cortex is thinking...</p>
           </div>
           
           <div v-else class="relative z-10">
             <div class="flex items-start space-x-4">
-              <div class="mt-1 p-2 bg-primary/20 rounded-xl">
-                <Sparkles class="h-5 w-5 text-primary" />
+              <div class="mt-1 p-2 bg-primary/20 dark:bg-primary-light/20 rounded-xl">
+                <Sparkles class="h-5 w-5 text-primary dark:text-primary-light" />
               </div>
               <div class="flex-1 space-y-4">
-                <p class="text-foreground leading-relaxed font-sans whitespace-pre-wrap">
+                <p class="text-foreground dark:text-dark-text leading-relaxed font-sans whitespace-pre-wrap">
                   {{ fileStore.aiResponse }}
                 </p>
-                <div class="pt-4 border-t border-primary/10 flex justify-end">
-                  <span class="text-[10px] uppercase tracking-widest font-bold text-primary/40">Powered by Cortex LLM</span>
+                <div class="pt-4 border-t border-primary/10 dark:border-white/10 flex justify-end">
+                  <span class="text-[10px] uppercase tracking-widest font-bold text-primary/40 dark:text-primary-light/40">Powered by Cortex LLM</span>
                 </div>
               </div>
             </div>

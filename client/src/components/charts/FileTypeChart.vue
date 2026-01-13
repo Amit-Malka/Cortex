@@ -3,10 +3,12 @@ import { computed } from 'vue';
 import { Doughnut } from 'vue-chartjs';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { useFileStore } from '../../stores/files';
+import { useTheme } from '../../composables/useTheme';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const store = useFileStore();
+const { isDark } = useTheme();
 
 const chartData = computed(() => {
   const data = store.filesByType;
@@ -26,39 +28,45 @@ const chartData = computed(() => {
   };
 });
 
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'bottom' as const,
-      labels: {
-        usePointStyle: true,
-        font: {
-          family: 'Nunito',
-          size: 12
-        },
-        color: '#2C2C24'
-      }
-    },
-    tooltip: {
-      backgroundColor: '#FDFCF8',
-      titleColor: '#2C2C24',
-      bodyColor: '#5D7052',
-      borderColor: '#DED8CF',
-      borderWidth: 1,
-      padding: 12,
-      cornerRadius: 12,
-      displayColors: true,
-      callbacks: {
-        label: function(context: any) {
-          return ` ${context.label}: ${context.raw} files`;
+const chartOptions = computed(() => {
+  const textColor = isDark.value ? '#E6DCCD' : '#2C2C24';
+  const tooltipBg = isDark.value ? '#242422' : '#FDFCF8';
+  const tooltipBorder = isDark.value ? 'rgba(255, 255, 255, 0.1)' : '#DED8CF';
+
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          usePointStyle: true,
+          font: {
+            family: 'Nunito',
+            size: 12
+          },
+          color: textColor
+        }
+      },
+      tooltip: {
+        backgroundColor: tooltipBg,
+        titleColor: textColor,
+        bodyColor: '#5D7052',
+        borderColor: tooltipBorder,
+        borderWidth: 1,
+        padding: 12,
+        cornerRadius: 12,
+        displayColors: true,
+        callbacks: {
+          label: function(context: any) {
+            return ` ${context.label}: ${context.raw} files`;
+          }
         }
       }
-    }
-  },
-  cutout: '65%'
-};
+    },
+    cutout: '65%'
+  };
+});
 </script>
 
 <template>
