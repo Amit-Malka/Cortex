@@ -29,8 +29,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   function login(newToken: string) {
     setToken(newToken);
-    // Optionally fetch user profile here if needed, 
-    // but the prompt just says 'login(token)'
   }
 
   function logout() {
