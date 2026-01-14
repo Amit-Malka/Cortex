@@ -79,7 +79,7 @@ export const useFileStore = defineStore('files', () => {
       sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
     } else {
       sortBy.value = field;
-      sortOrder.value = 'asc'; // Default to asc for new field, except maybe date? But let's keep simple.
+      sortOrder.value = 'asc';
     }
   };
 
@@ -203,8 +203,6 @@ export const useFileStore = defineStore('files', () => {
         }
       });
       files.value = response.data.data.files;
-      // We don't necessarily need to update pagination state here as this is for analytics
-      // but keeping it in sync might be good practice, or just ignored.
     } catch (error) {
       console.error('Failed to fetch all files:', error);
     } finally {
@@ -216,7 +214,6 @@ export const useFileStore = defineStore('files', () => {
     syncing.value = true;
     try {
       await api.post('/drive/sync');
-      // Refresh data after sync
       await Promise.all([
         fetchStats(),
         fetchFiles(1) // Reset to page 1
@@ -252,7 +249,6 @@ export const useFileStore = defineStore('files', () => {
   async function deleteFile(id: string) {
     try {
       await api.delete(`/files/${id}`);
-      // Optimistic update
       files.value = files.value.filter(f => f.id !== id);
       // Update count in stats if available
       if (stats.value) {

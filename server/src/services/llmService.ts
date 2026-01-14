@@ -90,7 +90,7 @@ class LlmService {
 
         systemPrompt = 
           `You are Cortex, an intelligent Drive assistant.
-           Here is the list of the user's most recent files (max 100):
+           Here is the list of the user's most recent files:
            ${filesString}
            
            Answer the user's question based strictly on this data.
@@ -127,8 +127,6 @@ class LlmService {
         content: userMessage,
       });
 
-      console.log(`Sending request to OpenAI ${this.model} with ${inputs.length} messages.`);
-
       // 3. Call OpenAI Responses API
       // @ts-ignore - bypassing strict type check for experimental API
       const response: any = await client.responses.create({
@@ -137,14 +135,9 @@ class LlmService {
         max_output_tokens: 8000,
       });
 
-      console.log('Raw OpenAI Response Keys:', Object.keys(response));
-
       // Check if response is wrapped in a 'data' property (common in some client configs)
       // @ts-ignore
       const actualResponse = response.data || response;
-      if (response.data) {
-          console.log('Response is wrapped in .data. Keys:', Object.keys(response.data));
-      }
 
       // Check for API-level errors returned in the success body
       if (actualResponse.error) {
@@ -181,7 +174,6 @@ class LlmService {
 
       if (!reply) {
         console.error('Standard parsing failed. Attempting brute-force search for content...');
-        console.log('Full Response Object (First 500 chars):', JSON.stringify(actualResponse).substring(0, 500));
         
         // Log incomplete details if present
         if (actualResponse.incomplete_details) {
@@ -195,7 +187,6 @@ class LlmService {
             if (skipKeys.includes(key)) continue;
             
             if (typeof value === 'string' && value.length > 20) { // arbitrary length to avoid short status codes
-                console.log(`Found candidate content in key: '${key}'`);
                 reply = value;
                 break; 
             }
