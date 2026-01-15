@@ -51,29 +51,6 @@ export const useFileStore = defineStore('files', () => {
   const sortBy = ref<'name' | 'size' | 'mimeType' | 'modifiedTime'>('modifiedTime');
   const sortOrder = ref<'asc' | 'desc'>('desc');
 
-  const sortedFiles = computed(() => {
-    return [...files.value].sort((a, b) => {
-      let comparison = 0;
-      
-      switch (sortBy.value) {
-        case 'name':
-          comparison = a.name.localeCompare(b.name);
-          break;
-        case 'size':
-          comparison = Number(BigInt(a.size) - BigInt(b.size));
-          break;
-        case 'mimeType':
-          comparison = a.mimeType.localeCompare(b.mimeType);
-          break;
-        case 'modifiedTime':
-          comparison = new Date(a.modifiedTime).getTime() - new Date(b.modifiedTime).getTime();
-          break;
-      }
-      
-      return sortOrder.value === 'asc' ? comparison : -comparison;
-    });
-  });
-
   const toggleSort = (field: 'name' | 'size' | 'mimeType' | 'modifiedTime') => {
     if (sortBy.value === field) {
       sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
@@ -81,6 +58,7 @@ export const useFileStore = defineStore('files', () => {
       sortBy.value = field;
       sortOrder.value = 'asc';
     }
+    fetchFiles(1);
   };
 
   const filesByType = computed(() => {
@@ -182,7 +160,11 @@ export const useFileStore = defineStore('files', () => {
     loading.value = true;
     try {
       const response = await api.get('/files', {
-        params: { page }
+        params: { 
+          page,
+          sortBy: sortBy.value,
+          order: sortOrder.value
+        }
       });
       files.value = response.data.data.files;
       pagination.value = response.data.data.meta;
@@ -287,7 +269,6 @@ export const useFileStore = defineStore('files', () => {
     aiLoading,
     sortBy,
     sortOrder,
-    sortedFiles,
     filesByType,
     storageBySize,
     filesByDate,
