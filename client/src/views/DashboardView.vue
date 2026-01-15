@@ -94,7 +94,7 @@ const changePage = (newPage: number) => {
           </span>
         </div>
 
-        <FileTable :files="fileStore.sortedFiles" :loading="fileStore.loading" />
+        <FileTable :files="fileStore.files" :loading="fileStore.loading" />
 
         <!-- Pagination -->
         <div class="flex justify-between items-center bg-white/50 dark:bg-dark-surface/50 backdrop-blur-sm px-6 py-4 border border-border-color/30 dark:border-white/10 rounded-2xl shadow-sm transition-colors">

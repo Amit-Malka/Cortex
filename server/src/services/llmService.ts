@@ -55,20 +55,19 @@ class LlmService {
     try {
       const client = this.getClient();
 
-      // 1. Fetch files (Limit to 100 most recent to avoid context overflow)
+      // 1. Fetch files (Limit to 3000 to prevent token overflow, but sorted by modifiedTime)
+      const maxFiles = 3000;
       const files = await prisma.file.findMany({
         where: { userId },
         orderBy: { modifiedTime: 'desc' },
-        take: 100,
+        take: maxFiles,
         select: {
           name: true,
           mimeType: true,
           size: true,
           modifiedTime: true,
           ownerName: true,
-          lastModifierName: true,
           isStarred: true,
-          isShared: true,
         },
       });
 
@@ -80,30 +79,34 @@ class LlmService {
           "The user currently has no files in their drive. " +
           "If they ask about files, politely inform them: 'I don't see any files yet. Please sync your drive.'";
       } else {
+        // Compact CSV-style context
+        const header = "Name,Type,Size,Date,Owner,Starred";
         const filesString = files.map(f => {
-          const owner = f.ownerName ? ` | Owner: ${f.ownerName}` : '';
-          const modifier = f.lastModifierName ? ` | Modified By: ${f.lastModifierName}` : '';
-          const starred = f.isStarred ? ' | [STARRED]' : '';
-          const shared = f.isShared ? ' | [SHARED]' : '';
-          return `[${f.name} | ${f.mimeType} | ${f.size} bytes | Modified: ${f.modifiedTime.toISOString().split('T')[0]}${owner}${modifier}${starred}${shared}]`;
+          const starred = f.isStarred ? '*' : '';
+          // Escape quotes in name if necessary
+          const name = f.name.includes(',') ? `"${f.name}"` : f.name;
+          return `${name},${f.mimeType},${f.size},${f.modifiedTime.toISOString().split('T')[0]},${f.ownerName},${starred}`;
         }).join('\n');
+
+        const truncationNote = files.length === maxFiles 
+          ? `\n(List truncated to ${maxFiles} most recent files)` 
+          : '';
 
         systemPrompt = 
           `You are Cortex, an intelligent Drive assistant.
-           Here is the list of the user's most recent files:
+           Here is the list of the user's files (CSV format: ${header}):
            ${filesString}
+           ${truncationNote}
            
            Answer the user's question based strictly on this data.
            
            Guidelines:
-           - If asked about 'largest file', compare the sizes provided.
-           - If asked about 'recent', check modifiedTime.
-           - If asked about 'distribution' of types, count the mimeTypes.
-           - If asked about 'distribution' of dates, group files by MONTH and YEAR (e.g., "3 files in Dec 2025").
-           - If asked about 'owners', count the unique names in the 'Owner' field. If everyone is 'Me', say so.
-           - If asked about 'starred' or 'important' files, look for [STARRED].
-           - If asked about 'shared' files, look for [SHARED].
-           - If asked about who changed a file, look at 'Modified By'.
+           - The data is in CSV format: Name, Type, Size (bytes), Date (YYYY-MM-DD), Owner, Starred (*).
+           - If asked about 'largest file', compare the Size column.
+           - If asked about 'recent', check the Date column.
+           - If asked about 'distribution' of types, count the Type column.
+           - If asked about 'distribution' of dates, group by Month/Year.
+           - If asked about 'starred', look for the '*' in the Starred column.
            - Do not hallucinate files not in this list.
            - Be concise and helpful.`;
       }
