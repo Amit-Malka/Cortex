@@ -14,6 +14,10 @@ Cortex is a powerful, full-stack application designed to transform how you inter
 
 ---
 
+<img width="2752" height="1536" alt="unnamed" src="https://github.com/user-attachments/assets/43e400c0-5b18-4701-871b-2015f4ce00e3" />
+
+---
+
 ## 🛠️ Tech Stack
 
 **Frontend:**
