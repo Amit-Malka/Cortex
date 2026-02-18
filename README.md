@@ -142,6 +142,39 @@ CLIENT_URL="http://localhost:5173"
 
 ---
 
+## 🧪 Testing
+
+The project has full unit test coverage on both server and client. All tests are pure unit tests — no real database, Drive API, or OpenAI calls are made.
+
+### Server (Jest + ts-jest)
+
+```bash
+cd server
+npm install
+npx jest --testPathPattern="__tests__/unit" --no-coverage --runInBand
+```
+
+| Suite | Coverage |
+|---|---|
+| Utilities (AppError, catchAsync, JWT, BigInt, errorHandler) | 20 tests |
+| fileService | 13 tests |
+| driveService | 11 tests |
+| authService | 4 tests |
+| llmService | 14 tests |
+| Controllers + protect middleware | 18 tests |
+
+### Client (Vitest + happy-dom)
+
+```bash
+cd client
+npm install
+npm test
+```
+
+Covers: format utilities, `useTheme` composable, auth store, files store.
+
+---
+
 ## 🛡️ License
 
 This project is open-source and available under the [MIT License](LICENSE).
